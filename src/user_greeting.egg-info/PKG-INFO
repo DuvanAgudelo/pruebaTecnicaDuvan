@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: user_greeting
+Version: 0.1
+Summary: This project is an application that greets users and stores their data in persistent storage.
+Author: Duvan Andrés Amado
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Requires-Dist: Flask>=2.0.0
+Requires-Dist: mysqlclient
+Requires-Dist: flask_mysqldb
+Requires-Dist: pytest

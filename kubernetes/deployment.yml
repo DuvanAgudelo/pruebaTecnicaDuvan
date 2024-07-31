@@ -1,0 +1,388 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: junior-test
+
+---
+
+# PersistentVolumeClaim for MySQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: junior-test
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+# Secret for MySQL credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: junior-test
+type: Opaque
+data:                 
+  MYSQL_USER: Zmxhc2tfdXNlcg==           
+  MYSQL_PASSWORD: Zmxhc2tfcGFzc3dvcmQ=   
+  MYSQL_ROOT_PASSWORD: YWRtaW4=  
+
+---
+
+# Define the ConfigMap for MySQL configurations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  namespace: junior-test
+data:
+  MYSQL_HOST: "mysql"
+  MYSQL_PORT: "3306"
+  MYSQL_DB: "flask_app"
+
+---
+
+# Define the ConfigMap containing the init.sql file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-sql-config
+  namespace: junior-test
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS flask_app;
+
+    USE flask_app;
+
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  
+---
+
+#Define the ConfigMap creating a user for the web app to connect
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: create-flask-user-sql
+  namespace: junior-test
+data:
+  create_user.sql: |
+    CREATE USER IF NOT EXISTS 'flask_user'@'%';
+    ALTER USER 'flask_user'@'%' IDENTIFIED BY 'flask_password';
+    GRANT SELECT, INSERT ON flask_app.* TO 'flask_user'@'%';
+    FLUSH PRIVILEGES;
+
+---
+
+#Define the ConfigMap containing the custom page 403 used it for the nginx reverse proxy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-pages
+  namespace: junior-test
+data:
+  403.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>403 Forbidden</title>
+    </head>
+    <body>
+        <center>
+            <h1>403 Forbidden</h1>
+            <h1>You shall not pass</h1>
+            <img src="data:image/png;base64,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" alt="Gandalf">
+        </center>
+        <hr>
+    </body>
+    </html>
+
+---
+
+#Define the ConfigMap containing the nginx.conf file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: junior-test
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        # Basic security measures
+        add_header X-Content-Type-Options nosniff;
+        add_header X-Frame-Options DENY;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Content-Security-Policy "default-src 'self'";
+
+        # Server configuration
+        server {
+            listen 80;
+
+            # Allow only POST requests
+            location / {
+                limit_except POST {
+                    deny all;
+                }
+                proxy_pass http://web:5000; # Redirect to Flask container
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Allow only numeric characters and hyphens in the route for /users/ endpoint
+            location ~ /users/([0-9\-]+)$ {
+                proxy_pass http://web:5000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Custom error page for 403 Forbidden
+            error_page 403 /403.html;
+            location = /403.html {
+                root /usr/share/nginx/html;
+                internal;
+            }
+        }
+    }
+
+---
+
+# Create a MySQL deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: junior-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          value: "flask_app"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: init.sql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+      - name: init-sql
+        configMap:
+          name: init-sql-config
+
+---
+
+#MySQL service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: junior-test
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql
+
+---
+
+# Job that creates a user in the mysql pod with lesser permits than root
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-mysql-user
+  namespace: junior-test
+spec:
+  template:
+    spec:
+      containers:
+      - name: create-mysql-user
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        command: ["/bin/sh"]
+        args:
+          - "-c"
+          - |
+            until mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql -e "select 1"; do
+              echo "Waiting for MySQL to be ready..."
+              sleep 5
+            done
+            mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql < /scripts/create_user.sql;
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+      restartPolicy: OnFailure
+      volumes:
+      - name: script-volume
+        configMap:
+          name: create-flask-user-sql
+
+---
+
+# Create a web application deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: junior-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: flask-web:latest 
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MYSQL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_HOST
+        - name: MYSQL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_PORT
+        - name: MYSQL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_DB
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+
+---
+
+#application, web service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: junior-test
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: web
+    
+---
+
+# Create a nginx deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: junior-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: custom-pages
+              mountPath: /usr/share/nginx/html
+            - name: temp
+              mountPath: /nginx/tmp
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: custom-pages
+          configMap:
+            name: custom-pages
+        - name: temp
+          emptyDir: {}
+
+---
+
+#nginx service
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: junior-test
+spec:
+  type: NodePort
+  ports:
+  - port: 80  
+    targetPort: 80
+    nodePort: 30007  
+  selector:
+    app: nginx
