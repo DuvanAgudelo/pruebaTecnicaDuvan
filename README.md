@@ -62,10 +62,10 @@ To run the application locally, follow these steps:
     Set the environment variables. On Windows, you can do this using PowerShell as follows:
 
     ```powershell
-      $env:MYSQL_PORT = "<numero del puerto>"
-      $env:MYSQL_USER = "<usuario>"
-      $env:MYSQL_PASSWORD = "<contraseña>"
-      $env:MYSQL_DB = "<nombre base de datos>"
+      $env:MYSQL_PORT = "<port number it is 3306 by defect >"
+      $env:MYSQL_USER = "<user>"
+      $env:MYSQL_PASSWORD = "<password>"
+      $env:MYSQL_DB = "flask_app"
       $env:MYSQL_HOST = "<host>"
      ```
      For local testing, set the host as localhost.
@@ -139,7 +139,7 @@ To run the application using Docker, follow these steps:
    Set the environment variables. On Windows, you can do this using PowerShell as follows:
 
       ```bash
-      $env:MYSQL_DATABASE = "<Created database name>"
+      $env:MYSQL_DATABASE = "flask_app"
       $env:MYSQL_ROOT_PASSWORD = "<root user password>"
       $env:MYSQL_USER = "<for local testing, use root>"
       $env:MYSQL_PASSWORD = "<root user password>"
