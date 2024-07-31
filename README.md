@@ -79,7 +79,7 @@ To run the application locally, follow these steps:
     ```
 
 
-6. **Uso de la aplicación**
+6. **Application Usage**
     This application has three routes:
 
     1. **`/hello`**:  This route accepts a payload with a user name. This name can contain alphanumeric characters, accents, and diacritics, but does not accept special characters. It will persist the user with the name and a timestamp of when the user was created.
