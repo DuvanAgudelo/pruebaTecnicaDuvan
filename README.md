@@ -223,7 +223,15 @@ To run the application using Docker, follow these steps:
 
 ## Running in Kubernetes
 
-1. **Build Image**
+1. **Start Minikube**
+
+   Open a terminal and execute the following command to start Minikube:
+
+   ```bash
+   minikube start
+   ```
+
+2. **Build Image**
 
    To ensure the Kubernetes deployment works, you first need to build the Docker image with this name "flask-web". Run the following command:
      ```bash
@@ -234,14 +242,6 @@ To run the application using Docker, follow these steps:
 
    ```bash
     minikube image load flask-web:latest
-   ```
-
-2. **Start Minikube**
-
-   Open a terminal and execute the following command to start Minikube:
-
-   ```bash
-   minikube start
    ```
 
 3. **Deploy the Necessary Resources**
