@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN pip install --upgrade pip
 
-RUN apk update && apk upgrade \ 
+RUN apk update && apk upgrade \
     && apk add --no-cache \
     perl tar util-linux zlib \
     gcc musl-dev \
@@ -13,8 +13,9 @@ RUN apk update && apk upgrade \
     python3-dev \
     && rm -rf /var/cache/apk/*
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY . .
-
-RUN pip install --no-cache-dir .
+RUN chown -R appuser:appgroup /app
+USER appuser
 
 CMD ["user_greeting"]
